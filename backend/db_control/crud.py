@@ -10,7 +10,7 @@ import json
 import pandas as pd
 
 from db_control.connect import engine
-from db_control.mymodels import Users, Dogs, DogBooks, Locations, Points
+from db_control.mymodels import Users, Dogs, DogBooks, Locations, Encounts, EarnPoints, UsePoints
  
 
 def myinsert(mymodel, values):
@@ -32,14 +32,15 @@ def myinsert(mymodel, values):
     session.close()
     return "inserted"
 
-
-def myselect(mymodel, user_id):
+def myselect(mymodel, column_name, value):
     Session = sessionmaker(bind=engine)
     session = Session()
     
     try:
-        # 特定のユーザーidに一致するデータを選択
-        query = select(mymodel).where(mymodel.user_id == user_id)
+        # カラム名を動的に取得
+        column = getattr(mymodel, column_name)
+        # 特定のカラムに一致するデータを選択
+        query = select(mymodel).where(column == value)
         result = session.execute(query)
         # 結果をリストに変換
         rows = result.scalars().all()
@@ -67,6 +68,26 @@ def myselectAll(mymodel):
     # セッションを閉じる
     session.close()
     return result_json
+
+
+"""不要
+def myselectUser(mymodel, user_id):
+    Session = sessionmaker(bind=engine)
+    session = Session()
+    
+    try:
+        # 特定のユーザーidに一致するデータを選択
+        query = select(mymodel).where(mymodel.user_id == user_id)
+        result = session.execute(query)
+        # 結果をリストに変換
+        rows = result.scalars().all()
+        return rows
+    finally:
+        # セッションを閉じる
+        session.close()
+
+"""
+
 
 def myupdate(mymodel, values):
     # session構築
