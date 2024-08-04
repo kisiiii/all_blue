@@ -4,7 +4,10 @@ import { useState } from "react";
 import { useRouter } from "next/navigation";
 import fetchUsers from "./fetchUsers";
 
-const Login = () => {
+const Register = () => {
+  const [userName, setUserName] = useState("");
+  const [birthdate, setBirthdate] = useState("");
+  const [gender, setGender] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const router = useRouter();
@@ -12,18 +15,56 @@ const Login = () => {
   const handleSubmit = async (e) => {
     e.preventDefault();
     try {
-      const user = await fetchUsers(email, password);
-      router.push(`/home/${user.user_id}`);
+      const userData = {
+        user_name: userName,
+        user_birthdate: birthdate,
+        user_gender: gender,
+        mail: email,
+        password: password,
+      };
+      await registerUser(userData);
+      router.push("/login");
     } catch (error) {
-      console.error("Login failed:", error.message);
-      alert("Login failed: " + error.message);
+      console.error("Registration failed:", error.message);
+      alert("Registration failed: " + error.message);
     }
   };
 
   return (
-    <div className="login-container">
-      <h1>Login</h1>
-      <form onSubmit={handleSubmit} className="login-form">
+    <div className="register-container">
+      <h1>Register</h1>
+      <form onSubmit={handleSubmit} className="register-form">
+        <div className="input-box">
+          <label>ユーザー名:</label>
+          <input
+            type="text"
+            value={userName}
+            onChange={(e) => setUserName(e.target.value)}
+            required
+          />
+        </div>
+        <div className="input-box">
+          <label>生年月日:</label>
+          <input
+            type="date"
+            value={birthdate}
+            onChange={(e) => setBirthdate(e.target.value)}
+            required
+          />
+        </div>
+        <div className="input-box">
+          <label>性別:</label>
+          <select
+            value={gender}
+            onChange={(e) => setGender(e.target.value)}
+            required
+          >
+            <option value="">選択してください</option>
+            <option value="男">男</option>
+            <option value="女">女</option>
+            <option value="答えたくない">答えたくない</option>
+          </select>
+        </div>
         <div className="input-box">
           <label>Email:</label>
           <input
@@ -42,13 +83,10 @@ const Login = () => {
             required
           />
         </div>
-        <button type="submit">Login</button>
+        <button type="submit">登録する</button>
       </form>
-      <button onClick={() => router.push("/register")} className="register-button">
-        アカウントを作成する
-      </button>
       <style jsx>{`
-        .login-container {
+        .register-container {
           display: flex;
           flex-direction: column;
           align-items: center;
@@ -56,7 +94,7 @@ const Login = () => {
           height: 100vh;
           background-color: #f0f0f0;
         }
-        .login-form {
+        .register-form {
           display: flex;
           flex-direction: column;
           width: 300px;
@@ -89,16 +127,9 @@ const Login = () => {
         button:hover {
           background-color: #005bb5;
         }
-        .register-button {
-          margin-top: 10px;
-          background-color: #28a745;
-        }
-        .register-button:hover {
-          background-color: #218838;
-        }
       `}</style>
     </div>
   );
 };
 
-export default Login;
+export default Register;
