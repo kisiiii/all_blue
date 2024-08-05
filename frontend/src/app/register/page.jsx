@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
-import fetchUsers from "./fetchUsers";
+import registerUser from "./fetchUsers";
 
 const Register = () => {
   const [userName, setUserName] = useState("");
