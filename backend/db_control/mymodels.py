@@ -1,4 +1,4 @@
-from sqlalchemy import ForeignKey, Column, String, Float, Integer, DateTime, Date
+from sqlalchemy import ForeignKey, Column, String, Float, Integer, DateTime, Date, UniqueConstraint
 from sqlalchemy.orm import declarative_base
 import uuid
 
@@ -43,6 +43,14 @@ class Locations(Base):
     latitude = Column(Float, nullable=False)
     longitude = Column(Float, nullable=False)
     location_datetime = Column(DateTime, nullable=False)
+
+# リアルタイム_GPS_DB
+class RTLocations(Base):
+    __tablename__ = 'rt_locations'
+    rt_location_id = Column(Integer, primary_key=True, autoincrement=True, index=True)
+    user_id = Column(String, ForeignKey('users.user_id'), nullable=False, index=True)
+    latitude = Column(Float)
+    longitude = Column(Float)
 
 # すれ違い_DB
 class Encounts(Base):

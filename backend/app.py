@@ -17,66 +17,109 @@ def index():
     return "<p>Flask top page!</p>"
 
 
+"""
+http://localhost:5000/search?model=Users&column=user_id&value=2ef7b8ea-6399-4827-b4f3-c092d48608ee
+APIエンドポイントの書き方
+onst res = await fetch(process.env.API_ENDPOINT+`/search?model=Users&column=user_id&value=${id}`, {cache: "no-cache"});
+"""
 @app.route("/search", methods=['GET'])
-# http://localhost:5000/search?model=Dogs&column=user_id&value=2ef7b8ea-6399-4827-b4f3-c092d48608ee
-# http://localhost:5000/search?model=Users&column=user_id&value=2ef7b8ea-6399-4827-b4f3-c092d48608ee
 def search():
     model_name = request.args.get('model')
     column_name = request.args.get('column')
     value = request.args.get('value')
-    
     model = getattr(mymodels, model_name)    # モデルの取得
     result = crud.myselect(model, column_name, value)    # データベースからデータを取得
-    
-    # 結果がない場合のエラーハンドリング
-    if not result:
-        return jsonify({"error": "No matching records found"}), 404
-    
-    # 結果をJSON形式で返す
-    result_list = []
-    for row in result:
-        row_dict = row.__dict__.copy()
-        row_dict.pop('_sa_instance_state', None)  # SQLAlchemyの内部状態を削除
-        
-        #print(f"Before formatting: {row_dict}") # デバッグ出力
-        
-        # 日付フィールドをフォーマット
-        for key, value in row_dict.items():
-            print(f"Key: {key}, Value: {value}, Type: {type(value)}")
-            if isinstance(value, (datetime, date)):
-                row_dict[key] = value.strftime('%Y-%m-%d')
-        
-        #print(f"After formatting: {row_dict}")　# デバッグ出力
-        
-        result_list.append(row_dict)
-    
-    return jsonify(result_list), 200
+    return jsonify(result), 200
 
+# Users
 @app.route("/allusers", methods=['GET'])
 def read_all_Users():
     model = mymodels.Users
-    result = crud.myselectAll(mymodels.Users)
+    result = crud.myselectAll(model)
     return result, 200
 
+@app.route("/users", methods=['GET'])
+def read_one_User():
+    model = mymodels.Users
+    target_id = request.args.get('user_id')
+    result = crud.myselect(model, 'user_id', target_id)
+    return jsonify(result), 200
+
+@app.route("/users", methods=['POST'])
+def create_Users():
+    model = mymodels.Users
+    values = request.get_json()
+    
+    # user_birthdateをdateオブジェクトに変換
+    if 'user_birthdate' in values:
+        values['user_birthdate'] = datetime.strptime(values['user_birthdate'], '%Y-%m-%d').date()
+    
+    tmp = crud.myinsert(model, values)
+    result = crud.myselect(model, 'user_id', values.get("user_id"))
+    return jsonify(result), 200
+
+@app.route("/users", methods=['PUT'])
+def update_user():
+    values = request.get_json()
+    values_original = values.copy()
+    model = mymodels.Users
+    tmp = crud.myupdate(model, values)
+    result = crud.myselect(model, values_original.get("user_id"))
+    return jsonify(result), 200
+
+#Dogs
 @app.route("/alldogs", methods=['GET'])
 def read_all_Dogs():
     model = mymodels.Dogs
-    result = crud.myselectAll(mymodels.Dogs)
+    result = crud.myselectAll(model)
     return result, 200
 
-@app.route("/users", methods=['POST'])
-def create_users():
-    values = request.get_json()
-    tmp = crud.myinsert(mymodels.Users, values)
-    result = crud.myselect(mymodels.Users, values.get("user_id"))
-    return result, 200
+@app.route("/dogs", methods=['GET'])
+def read_one_Dog():
+    model = mymodels.Dogs
+    target_id = request.args.get('dog_id')
+    result = crud.myselect(model, 'dog_id', target_id)
+    return jsonify(result), 200
+
 
 @app.route("/dogs", methods=['POST'])
-def create_dogs():
+def create_Dogs():
+    model = mymodels.Dogs
     values = request.get_json()
-    tmp = crud.myinsert(mymodels.Dogs, values)
-    result = crud.myselect(mymodels.Dogs, values.get("dog_id"))
+    tmp = crud.myinsert(model, values)
+    result = crud.myselect(model, 'dog_id', values.get("dog_id"))
+    return jsonify(result), 200
+
+
+# GPR履歴を取得
+@app.route("/alllocations", methods=['GET'])
+def read_all_Locations():
+    model = mymodels.Locations
+    result = crud.myselectAll(model)
     return result, 200
+
+@app.route("/locations", methods=['GET'])
+def read_one_Location():
+    model = mymodels.Locations
+    target_id = request.args.get('location_id')
+    result = crud.myselect(model, 'location_id', target_id)
+    return jsonify(result), 200
+
+
+@app.route("/locations", methods=['POST'])
+def create_Locations():
+    model = mymodels.Locations
+    values = request.get_json()
+    if "location_datetime" in values:
+        values["location_datetime"] = datetime.fromisoformat(values["location_datetime"]).replace(microsecond=0)
+    
+    result = crud.myinsert(model, values)
+    if result["status"] == "error":
+        return jsonify({"error": result["message"]}), 400
+
+    selected_data = crud.myselect(model, "location_id", result["location_id"])
+    return jsonify(selected_data), 200
+
 
 """
 @app.route("/customers", methods=['PUT'])

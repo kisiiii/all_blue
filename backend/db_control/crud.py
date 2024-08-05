@@ -6,8 +6,10 @@ print("platform", platform.uname())
 from sqlalchemy import create_engine, insert, delete, update, select
 import sqlalchemy
 from sqlalchemy.orm import sessionmaker
+from sqlalchemy.exc import IntegrityError
 import json
 import pandas as pd
+from datetime import datetime, date
 
 from db_control.connect import engine
 from db_control.mymodels import Users, Dogs, DogBooks, Locations, Encounts, EarnPoints, UsePoints
@@ -18,19 +20,21 @@ def myinsert(mymodel, values):
     Session = sessionmaker(bind=engine)
     session = Session()
 
-    query = insert(mymodel).values(values)
+    new_instance = mymodel(**values)
+    session.add(new_instance)
     try:
-        # トランザクションを開始
-        with session.begin():
-            # データの挿入
-            result = session.execute(query)
-    except sqlalchemy.exc.IntegrityError:
-        print("一意制約違反により、挿入に失敗しました")
+        session.commit()  # 明示的にコミット
+        return {"status": "success"}
+    except IntegrityError as e:
+        print("一意制約違反により、挿入に失敗しました", e)
         session.rollback()
-
-    # セッションを閉じる
-    session.close()
-    return "inserted"
+        return {"status": "error", "message": "一意制約違反により、挿入に失敗しました"}
+    except Exception as e:
+        session.rollback()
+        print(f"エラーが発生しました: {e}")
+        return {"status": "error", "message": f"エラーが発生しました: {e}"}
+    finally:
+        session.close()
 
 def myselect(mymodel, column_name, value):
     Session = sessionmaker(bind=engine)
@@ -44,7 +48,12 @@ def myselect(mymodel, column_name, value):
         result = session.execute(query)
         # 結果をリストに変換
         rows = result.scalars().all()
-        return rows
+        result_list = []
+        for row in rows:
+            row_dict = row.__dict__.copy()
+            row_dict.pop('_sa_instance_state', None)  # SQLAlchemyの内部状態を削除
+            result_list.append(row_dict)
+            return result_list
     finally:
         # セッションを閉じる
         session.close()
@@ -70,7 +79,6 @@ def myselectAll(mymodel):
     return result_json
 
 
-"""不要
 def myselectUser(mymodel, user_id):
     Session = sessionmaker(bind=engine)
     session = Session()
@@ -86,16 +94,14 @@ def myselectUser(mymodel, user_id):
         # セッションを閉じる
         session.close()
 
-"""
-
 
 def myupdate(mymodel, values):
     # session構築
     Session = sessionmaker(bind=engine)
     session = Session()
 
-    customer_id = values.pop("customer_id")#values辞書からcustomer_idの値を取得
-    query = update(mymodel).where(mymodel.customer_id == customer_id).values(**values)##E0002対応
+    user_id = values.pop("user_id")#values辞書からcustomer_idの値を取得
+    query = update(mymodel).where(mymodel.user_id == user_id).values(**values)##E0002対応
 
     try:
         # トランザクションを開始
@@ -107,11 +113,11 @@ def myupdate(mymodel, values):
     session.close()
     return "PUT"
 
-def mydelete(mymodel, customer_id):
+def mydelete(mymodel, user_id):
     # session構築
     Session = sessionmaker(bind=engine)
     session = Session()
-    query = delete(mymodel).where(mymodel.customer_id==customer_id)
+    query = delete(mymodel).where(mymodel.user_id==user_id)
     try:
         # トランザクションを開始
         with session.begin():
@@ -122,4 +128,4 @@ def mydelete(mymodel, customer_id):
 
     # セッションを閉じる
     session.close()
-    return customer_id + " is deleted"
+    return user_id + " is deleted"
