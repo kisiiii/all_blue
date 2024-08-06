@@ -9,7 +9,8 @@ const RegisterDogPage = () => {
     dog_name: '',
     dog_breed: '',
     dog_birthdate: '',
-    dog_gender: ''
+    dog_gender: '',
+    dog_photo: null, // 新しいフィールド: 写真のファイルオブジェクト
   });
   const params = useParams();
   const router = useRouter();
@@ -25,17 +26,32 @@ const RegisterDogPage = () => {
   }, [user_id]);
 
   const handleChange = (e) => {
-    const { name, value } = e.target;
-    setFormData({
-      ...formData,
-      [name]: value
-    });
+    const { name, value, files } = e.target;
+    setFormData((prevData) => ({
+      ...prevData,
+      [name]: files ? files[0] : value, // ファイルの場合はfiles[0]を、それ以外はvalueを代入
+    }));
   };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
     try {
-      const data = await registerDog(formData);
+      // 写真のバイナリデータを含むフォームデータを作成
+      const formDataWithPhoto = new FormData();
+      formDataWithPhoto.append('dog_name', formData.dog_name);
+      formDataWithPhoto.append('dog_breed', formData.dog_breed);
+      formDataWithPhoto.append('dog_birthdate', formData.dog_birthdate);
+      formDataWithPhoto.append('dog_gender', formData.dog_gender);
+      formDataWithPhoto.append('dog_photo', formData.dog_photo); // 写真のファイルオブジェクトを追加
+
+      // バックエンドに送信
+      const res = await registerDog(formDataWithPhoto);
+
+      if (!res.ok) {
+        const errorData = await res.json();
+        throw new Error(errorData.message || 'Failed to register dog');
+      }
+
       alert('Dog registered successfully');
       router.push(`/home/${formData.user_id}`);
     } catch (error) {
@@ -90,6 +106,16 @@ const RegisterDogPage = () => {
             <option value="メス">メス</option>
           </select>
         </div>
+        <div className="input-box">
+          <label>写真を選択:</label>
+          <input
+            type="file"
+            name="dog_photo"
+            accept="image/*"
+            onChange={handleChange}
+            required
+          />
+        </div>
         <button type="submit">登録</button>
       </form>
       <style jsx>{`
@@ -139,7 +165,6 @@ const RegisterDogPage = () => {
     </div>
   );
 };
-
 export default RegisterDogPage;
 
 
