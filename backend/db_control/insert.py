@@ -30,7 +30,7 @@ new_dog = Dogs(
     dog_name = "チョコ",
     dog_breed = "パグ",
     dog_birthdate = datetime.strptime("2020-6-29", "%Y-%m-%d"),
-    dog_gender = "オス"
+    dog_gender = "オス",
     dog_photo=b'binary data here'  # バイナリデータを挿入
 )
 session.add(new_dog)
