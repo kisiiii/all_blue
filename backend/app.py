@@ -86,16 +86,34 @@ def read_one_Dog():
 
 @app.route("/dogs", methods=['POST'])
 def create_Dogs():
-    model = mymodels.Dogs
-    values = request.get_json()
-    
-    # user_birthdateをdateオブジェクトに変換
-    if 'dog_birthdate' in values:
-        values['dog_birthdate'] = datetime.strptime(values['dog_birthdate'], '%Y-%m-%d').date()
-    
-    tmp = crud.myinsert(model, values)
-    result = crud.myselect(model, 'dog_id', values.get("dog_id"))
-    return jsonify(result), 200
+    try:
+        app.logger.debug("Request headers: %s", request.headers)
+        app.logger.debug("Request form: %s", request.form)
+        app.logger.debug("Request files: %s", request.files)
+
+        if 'dog_photo' not in request.files:
+            return jsonify({"message": "No file part"}), 400
+
+        file = request.files['dog_photo']
+        if file.filename == '':
+            return jsonify({"message": "No selected file"}), 400
+
+        file_data = file.read()  # ファイルをバイナリデータとして読み込む
+
+        values = request.form.to_dict()
+        values['dog_photo'] = file_data  # バイナリデータを保存
+
+        # dog_birthdateをdateオブジェクトに変換
+        if 'dog_birthdate' in values:
+            values['dog_birthdate'] = datetime.strptime(values['dog_birthdate'], '%Y-%m-%d').date()
+
+        model = mymodels.Dogs
+        tmp = crud.myinsert(model, values)
+        result = crud.myselect(model, 'dog_id', tmp['dog_id'])
+        return jsonify(result), 201
+    except Exception as e:
+        app.logger.error(f"Error occurred: {e}")
+        return jsonify({"message": str(e)}), 500
 
 
 # GPS_DB

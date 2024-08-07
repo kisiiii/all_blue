@@ -10,7 +10,7 @@ const RegisterDogPage = () => {
     dog_breed: '',
     dog_birthdate: '',
     dog_gender: '',
-    dog_photo: null, // 新しいフィールド: 写真のファイルオブジェクト
+    dog_photo: null,
   });
   const params = useParams();
   const router = useRouter();
@@ -29,29 +29,24 @@ const RegisterDogPage = () => {
     const { name, value, files } = e.target;
     setFormData((prevData) => ({
       ...prevData,
-      [name]: files ? files[0] : value, // ファイルの場合はfiles[0]を、それ以外はvalueを代入
+      [name]: files ? files[0] : value,
     }));
   };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
     try {
-      // 写真のバイナリデータを含むフォームデータを作成
-      const formDataWithPhoto = new FormData();
-      formDataWithPhoto.append('dog_name', formData.dog_name);
-      formDataWithPhoto.append('dog_breed', formData.dog_breed);
-      formDataWithPhoto.append('dog_birthdate', formData.dog_birthdate);
-      formDataWithPhoto.append('dog_gender', formData.dog_gender);
-      formDataWithPhoto.append('dog_photo', formData.dog_photo); // 写真のファイルオブジェクトを追加
-
-      // バックエンドに送信
-      const res = await registerDog(formDataWithPhoto);
-
-      if (!res.ok) {
-        const errorData = await res.json();
-        throw new Error(errorData.message || 'Failed to register dog');
-      }
-
+      const formData = new FormData();
+      formData.append('dog_name', formData.dog_name);
+      formData.append('dog_breed', formData.dog_breed);
+      formData.append('dog_birthdate', formData.dog_birthdate);
+      formData.append('dog_gender', formData.dog_gender);
+      formData.append('dog_photo', formData.dog_photo);
+  
+      console.log("Form data:", formData);
+  
+      const res = await registerDog(formData);
+  
       alert('Dog registered successfully');
       router.push(`/home/${formData.user_id}`);
     } catch (error) {

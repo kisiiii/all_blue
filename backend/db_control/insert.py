@@ -21,7 +21,7 @@ try:
     print(f"New user_ID: {new_user.user_id}")
 except Exception as e:
     session.rollback()
-    print(f"Error: {e}")
+    print(f"Error: {e}")"""
 
 
 # ドッグ情報の挿入
@@ -31,6 +31,7 @@ new_dog = Dogs(
     dog_breed = "パグ",
     dog_birthdate = datetime.strptime("2020-6-29", "%Y-%m-%d"),
     dog_gender = "オス"
+    dog_photo=b'binary data here'  # バイナリデータを挿入
 )
 session.add(new_dog)
 try:
@@ -41,7 +42,7 @@ except Exception as e:
     print(f"Error: {e}")
 
 
-# GPS情報の挿入
+"""# GPS情報の挿入
 new_location = Locations(
     user_id = "6975a2a9-2226-4430-8274-9a320d26cda8",
     latitude = 133.9195,
