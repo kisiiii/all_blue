@@ -142,7 +142,7 @@ def create_Locations():
     if result["status"] == "error":
         return jsonify({"error": result["message"]}), 400
 
-    selected_data = crud.myselect(model, "user_id", result["user_id"])
+    selected_data = crud.myselect(model, "location_id", values.get("location_id"))
     return jsonify(selected_data), 200
 
 
@@ -161,11 +161,21 @@ def read_one_RTLocations():
     return jsonify(result), 200
 
 
+# リアルタイムでユーザーのGPS情報を作成するエンドポイント
+@app.route("/insert_rtlocation", methods=['POST'])
+def insert_rtlocation():
+    values = request.get_json()
+    model = mymodels.RTLocations
+
+    # 新しいデータとして挿入する
+    tmp = crud.myinsert(model, values)
+    result = crud.myselect(model, 'user_id', values.get("user_id"))
+    return jsonify(result), 200
+
 # リアルタイムでユーザーのGPS情報を更新するエンドポイント
-@app.route("/update_rtlocation", methods=['POST'])
+@app.route("/update_rtlocation", methods=['PUT'])
 def update_rtlocation():
     values = request.get_json()
-    values_original = values.copy()
     model = mymodels.RTLocations
     user_id = values.get("user_id")
 
@@ -174,29 +184,23 @@ def update_rtlocation():
     if existing_data:
         # 既存のデータがある場合、更新する
         tmp = crud.myupdate(model, values)
+        result = crud.myselect(model, 'user_id', user_id)
+        return jsonify(result), 200
     else:
-        # 新しいデータとして挿入する
-        tmp = crud.myinsert(model, values)
+        # データが存在しない場合のエラーハンドリング
+        return jsonify({"message": "User GPS data not found"}), 404
 
-    result = crud.myselect(model, 'user_id', user_id)
-    return jsonify(result), 200
 
-# ページを離れた際にユーザーの緯度経度をnullにするエンドポイント
-@app.route("/clear_rtlocation", methods=['POST'])
+# ページを離れた際にユーザーのrt_locationsのデータを削除するエンドポイント
+@app.route("/clear_rtlocation", methods=['DELETE'])
 def clear_rtlocation():
     values = request.get_json()
     user_id = values.get("user_id")
     model = mymodels.RTLocations
 
-    # 更新する値を設定
-    update_values = {
-        "user_id": user_id,
-        "latitude": None,
-        "longitude": None
-    }
-    tmp = crud.myupdate(model, update_values)
-    result = crud.myselect(model, 'user_id', user_id)
-    return jsonify(result), 200
+    # 該当のuser_idデータを削除
+    tmp = crud.mydelete(model, user_id)
+    return jsonify({"message": "User GPS data cleared"}), 200
 
 
 """
