@@ -153,28 +153,49 @@ def read_all_RTLocations():
     result = crud.myselectAll(model)
     return result, 200
 
-@app.route("/locations", methods=['GET'])
+@app.route("/rtlocations", methods=['GET'])
 def read_one_RTLocations():
     model = mymodels.RTLocations
     target_id = request.args.get('user_id')
     result = crud.myselect(model, 'user_id', target_id)
     return jsonify(result), 200
 
-@app.route("/locations", methods=['POST'])
-def create_RTLocations():
-    model = mymodels.RTLocations
-    values = request.get_json()
-    tmp = crud.myinsert(model, values)
-    result = crud.myselect(model, 'user_id', values.get("user_id"))
-    return jsonify(result), 200
 
-@app.route("/locations", methods=['PUT'])
-def update_RTLocations():
+# リアルタイムでユーザーのGPS情報を更新するエンドポイント
+@app.route("/update_rtlocation", methods=['POST'])
+def update_rtlocation():
     values = request.get_json()
     values_original = values.copy()
     model = mymodels.RTLocations
-    tmp = crud.myupdate(model, values)
-    result = crud.myselect(model, values_original.get("user_id"))
+    user_id = values.get("user_id")
+
+    # ユーザーの既存のGPS情報を取得
+    existing_data = crud.myselect(model, 'user_id', user_id)
+    if existing_data:
+        # 既存のデータがある場合、更新する
+        tmp = crud.myupdate(model, values)
+    else:
+        # 新しいデータとして挿入する
+        tmp = crud.myinsert(model, values)
+
+    result = crud.myselect(model, 'user_id', user_id)
+    return jsonify(result), 200
+
+# ページを離れた際にユーザーの緯度経度をnullにするエンドポイント
+@app.route("/clear_rtlocation", methods=['POST'])
+def clear_rtlocation():
+    values = request.get_json()
+    user_id = values.get("user_id")
+    model = mymodels.RTLocations
+
+    # 更新する値を設定
+    update_values = {
+        "user_id": user_id,
+        "latitude": None,
+        "longitude": None
+    }
+    tmp = crud.myupdate(model, update_values)
+    result = crud.myselect(model, 'user_id', user_id)
     return jsonify(result), 200
 
 

@@ -15,11 +15,16 @@ const WalkPage = ({ params }) => {
           const timestamp = new Date().toISOString();
 
           fetch(`${process.env.API_ENDPOINT}/locations`, {
-            method: 'POST',
+            method: "POST",
             headers: {
-              'Content-Type': 'application/json',
+              "Content-Type": "application/json",
             },
-            body: JSON.stringify({ user_id, latitude, longitude, location_datetime: timestamp }),
+            body: JSON.stringify({
+              user_id,
+              latitude,
+              longitude,
+              location_datetime: timestamp,
+            }),
           });
         });
       }
@@ -35,7 +40,9 @@ const WalkPage = ({ params }) => {
   return (
     <div>
       <h1>散歩中</h1>
-      <button className="styled-button" onClick={handleEndWalk}>散歩終了</button>
+      <button className="styled-button" onClick={handleEndWalk}>
+        散歩終了
+      </button>
       <style jsx>{`
         .styled-button {
           padding: 10px;
@@ -54,4 +61,3 @@ const WalkPage = ({ params }) => {
 };
 
 export default WalkPage;
-
