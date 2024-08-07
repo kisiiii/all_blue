@@ -1,4 +1,4 @@
-from sqlalchemy import ForeignKey, Column, String, Float, Integer, DateTime, Date, UniqueConstraint, Binary
+from sqlalchemy import ForeignKey, Column, String, Float, Integer, DateTime, Date, UniqueConstraint, BINARY
 from sqlalchemy.orm import declarative_base
 import uuid
 
@@ -27,7 +27,7 @@ class Dogs(Base):
     dog_breed = Column(String)
     dog_birthdate = Column(Date)
     dog_gender = Column(String)
-    dog_photo = Column(Binary)  # 新しいバイナリデータ用のカラム
+    dog_photo = Column(BINARY)  # 新しいバイナリデータ用のカラム
 
 # 図鑑DB
 class DogBooks(Base):
