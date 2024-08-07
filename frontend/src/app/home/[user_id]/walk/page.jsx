@@ -1,13 +1,13 @@
 "use client";
 
+import { useEffect } from "react";
 import { useRouter } from "next/navigation";
-import Link from 'next/link';
 
-const UserHomePage = ({ params }) => {
+const WalkPage = ({ params }) => {
   const { user_id } = params;
   const router = useRouter();
 
-  const startWalk = () => {
+  useEffect(() => {
     let interval = setInterval(() => {
       if (navigator.geolocation) {
         navigator.geolocation.getCurrentPosition((position) => {
@@ -26,21 +26,16 @@ const UserHomePage = ({ params }) => {
     }, 30000); // 30秒ごとに実行
 
     return () => clearInterval(interval);
-  };
+  }, [user_id]);
 
-  const handleStartWalk = () => {
-    startWalk();
-    router.push(`/home/${user_id}/walk`);
+  const handleEndWalk = () => {
+    router.push(`/home/${user_id}`);
   };
 
   return (
     <div>
-      <h1>Welcome, User {user_id}</h1>
-      <p>This is your home page.</p>
-      <Link href={`/home/${user_id}/register_dog`}>
-        <button className="styled-button">愛犬を登録する</button>
-      </Link>
-      <button className="styled-button" onClick={handleStartWalk}>散歩スタート</button>
+      <h1>散歩中</h1>
+      <button className="styled-button" onClick={handleEndWalk}>散歩終了</button>
       <style jsx>{`
         .styled-button {
           padding: 10px;
@@ -58,6 +53,5 @@ const UserHomePage = ({ params }) => {
   );
 };
 
-export default UserHomePage;
-
+export default WalkPage;
 
