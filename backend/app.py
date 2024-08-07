@@ -6,7 +6,7 @@ from flask_cors import CORS
 from db_control import crud, mymodels
 
 import requests
-from datetime import datetime, date
+from datetime import datetime, timezone
 
 app = Flask(__name__)
 CORS(app)
@@ -30,6 +30,7 @@ def search():
     model = getattr(mymodels, model_name)    # モデルの取得
     result = crud.myselect(model, column_name, value)    # データベースからデータを取得
     return jsonify(result), 200
+
 
 # Users
 @app.route("/allusers", methods=['GET'])
@@ -67,6 +68,7 @@ def update_user():
     result = crud.myselect(model, values_original.get("user_id"))
     return jsonify(result), 200
 
+
 #Dogs
 @app.route("/alldogs", methods=['GET'])
 def read_all_Dogs():
@@ -77,8 +79,8 @@ def read_all_Dogs():
 @app.route("/dogs", methods=['GET'])
 def read_one_Dog():
     model = mymodels.Dogs
-    target_id = request.args.get('dog_id')
-    result = crud.myselect(model, 'dog_id', target_id)
+    target_id = request.args.get('user_id')
+    result = crud.myselect(model, 'user_id', target_id)
     return jsonify(result), 200
 
 
@@ -86,12 +88,17 @@ def read_one_Dog():
 def create_Dogs():
     model = mymodels.Dogs
     values = request.get_json()
+    
+    # user_birthdateをdateオブジェクトに変換
+    if 'dog_birthdate' in values:
+        values['dog_birthdate'] = datetime.strptime(values['dog_birthdate'], '%Y-%m-%d').date()
+    
     tmp = crud.myinsert(model, values)
     result = crud.myselect(model, 'dog_id', values.get("dog_id"))
     return jsonify(result), 200
 
 
-# GPR履歴を取得
+# GPS_DB
 @app.route("/alllocations", methods=['GET'])
 def read_all_Locations():
     model = mymodels.Locations
@@ -101,8 +108,8 @@ def read_all_Locations():
 @app.route("/locations", methods=['GET'])
 def read_one_Location():
     model = mymodels.Locations
-    target_id = request.args.get('location_id')
-    result = crud.myselect(model, 'location_id', target_id)
+    target_id = request.args.get('user_id')
+    result = crud.myselect(model, 'user_id', target_id)
     return jsonify(result), 200
 
 
@@ -111,14 +118,46 @@ def create_Locations():
     model = mymodels.Locations
     values = request.get_json()
     if "location_datetime" in values:
-        values["location_datetime"] = datetime.fromisoformat(values["location_datetime"]).replace(microsecond=0)
+        values["location_datetime"] = datetime.fromisoformat(values["location_datetime"]).replace(microsecond=0, tzinfo=timezone.utc)
     
     result = crud.myinsert(model, values)
     if result["status"] == "error":
         return jsonify({"error": result["message"]}), 400
 
-    selected_data = crud.myselect(model, "location_id", result["location_id"])
+    selected_data = crud.myselect(model, "user_id", result["user_id"])
     return jsonify(selected_data), 200
+
+
+# リアルタイム_GPS_DB
+@app.route("/allrtlocations", methods=['GET'])
+def read_all_RTLocations():
+    model = mymodels.RTLocations
+    result = crud.myselectAll(model)
+    return result, 200
+
+@app.route("/locations", methods=['GET'])
+def read_one_RTLocations():
+    model = mymodels.RTLocations
+    target_id = request.args.get('user_id')
+    result = crud.myselect(model, 'user_id', target_id)
+    return jsonify(result), 200
+
+@app.route("/locations", methods=['POST'])
+def create_RTLocations():
+    model = mymodels.RTLocations
+    values = request.get_json()
+    tmp = crud.myinsert(model, values)
+    result = crud.myselect(model, 'user_id', values.get("user_id"))
+    return jsonify(result), 200
+
+@app.route("/locations", methods=['PUT'])
+def update_RTLocations():
+    values = request.get_json()
+    values_original = values.copy()
+    model = mymodels.RTLocations
+    tmp = crud.myupdate(model, values)
+    result = crud.myselect(model, values_original.get("user_id"))
+    return jsonify(result), 200
 
 
 """

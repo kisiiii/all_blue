@@ -57,9 +57,8 @@ class Encounts(Base):
     __tablename__ = 'encounts'
     encount_id = Column(Integer, primary_key=True, autoincrement=True, index=True)
     user_id = Column(String, ForeignKey('users.user_id'), nullable=False, index=True)
-    location_id = Column(String, ForeignKey('locations.location_id'), nullable=False, index=True)
     partner_user_id = Column(String, ForeignKey('users.user_id'), nullable=False, index=True)
-    partner_location_id = Column(String, ForeignKey('locations.location_id'), nullable=False, index=True)
+    encount_date = Column(Date, nullable=False)
 
 # 獲得ポイントDB
 class EarnPoints(Base):
