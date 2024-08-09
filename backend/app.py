@@ -165,30 +165,43 @@ def read_one_RTLocations():
 @app.route("/insert_rtlocation", methods=['POST'])
 def insert_rtlocation():
     values = request.get_json()
-    model = mymodels.RTLocations
+    user_id = values.get("user_id")
+    
+    if not user_id:
+        return jsonify({"error": "user_id is required"}), 400
 
-    # 新しいデータとして挿入する
-    tmp = crud.myinsert(model, values)
-    result = crud.myselect(model, 'user_id', values.get("user_id"))
+    latitude = values.get("latitude")
+    longitude = values.get("longitude")
+
+    # crud.pyの関数を呼び出して処理を行う
+    result = crud.insert_rtlocation_and_process_encounters(mymodels.RTLocations, mymodels.Encounts, user_id, latitude, longitude)
+
+    if result["status"] == "error":
+        return jsonify({"error": result["message"]}), 500
+
     return jsonify(result), 200
+
+if __name__ == "__main__":
+    app.run(debug=True)
 
 # リアルタイムでユーザーのGPS情報を更新するエンドポイント
 @app.route("/update_rtlocation", methods=['PUT'])
 def update_rtlocation():
     values = request.get_json()
-    model = mymodels.RTLocations
     user_id = values.get("user_id")
+    
+    if not user_id:
+        return jsonify({"error": "user_id is required"}), 400
 
-    # ユーザーの既存のGPS情報を取得
-    existing_data = crud.myselect(model, 'user_id', user_id)
-    if existing_data:
-        # 既存のデータがある場合、更新する
-        tmp = crud.myupdate(model, values)
-        result = crud.myselect(model, 'user_id', user_id)
-        return jsonify(result), 200
-    else:
-        # データが存在しない場合のエラーハンドリング
-        return jsonify({"message": "User GPS data not found"}), 404
+    latitude = values.get("latitude")
+    longitude = values.get("longitude")
+
+    result = crud.update_rt_location_and_process_encounters(user_id, latitude, longitude, mymodels.RTLocations, mymodels.Encounts)
+
+    if result["status"] == "error":
+        return jsonify({"error": result["message"]}), 500
+
+    return jsonify(result), 200
 
 
 # ページを離れた際にユーザーのrt_locationsのデータを削除するエンドポイント
@@ -201,6 +214,24 @@ def clear_rtlocation():
     # 該当のuser_idデータを削除
     tmp = crud.mydelete(model, user_id)
     return jsonify({"message": "User GPS data cleared"}), 200
+
+
+"""# すれ違い検知
+@app.route("/process_encounters", methods=['POST'])
+def process_encounters():
+    data = request.get_json()
+    user_id = data.get("user_id")
+    
+    if not user_id:
+        return jsonify({"error": "user_id is required"}), 400
+    
+    result = crud.check_and_save_encounters(user_id, mymodels.RTLocations, mymodels.Encounts)
+    
+    if result["status"] == "error":
+        return jsonify({"error": result["message"]}), 500
+
+    return jsonify(result), 200"""
+
 
 
 """

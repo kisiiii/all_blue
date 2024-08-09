@@ -31,7 +31,7 @@ const WalkPage = ({ params }) => {
         return response.json();
       })
       .then((data) => {
-        console.log("GPS情報を挿入しました", data);
+        console.log("GPS情報とエンカウント処理が完了しました", data);
         setIsInserted(true);
       })
       .catch((error) => {
@@ -97,6 +97,7 @@ const WalkPage = ({ params }) => {
         const { latitude, longitude } = position.coords;
         const timestamp = new Date().toISOString();
 
+        // locationsエンドポイントに位置情報を送信
         fetch(`${process.env.API_ENDPOINT}/locations`, {
           method: "POST",
           headers: {
@@ -108,13 +109,25 @@ const WalkPage = ({ params }) => {
             longitude,
             location_datetime: timestamp,
           }),
-        });
+        })
+          .then((response) => {
+            if (!response.ok) {
+              throw new Error(`HTTP error! status: ${response.status}`);
+            }
+            return response.json();
+          })
+          .then((data) => {
+            console.log("位置情報がlocationsテーブルに挿入されました", data);
+          })
+          .catch((error) => {
+            console.error("位置情報の挿入エラーが発生しました:", error);
+          });
 
         // リアルタイムGPS情報の挿入または更新
         if (!isInserted) {
-          insertRTLocation(latitude, longitude);
+          insertRTLocation(latitude, longitude); // ここで挿入とエンカウント処理が行われる
         } else {
-          updateRTLocation(latitude, longitude);
+          updateRTLocation(latitude, longitude); // 更新のみ
         }
       });
     }
