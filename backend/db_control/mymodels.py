@@ -17,6 +17,7 @@ class Users(Base):
     user_gender = Column(String)
     mail = Column(String, unique=True) # 一意制約
     password = Column(String, nullable=False)
+    point = Column(Integer, default=0)
 
 # ドッグDB
 class Dogs(Base):
