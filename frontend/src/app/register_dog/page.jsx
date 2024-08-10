@@ -20,7 +20,7 @@ const RegisterDogPage = () => {
     if (user_id) {
       setFormData((prevData) => ({
         ...prevData,
-        user_id: user_id
+        user_id: user_id,
       }));
     }
   }, [user_id]);
@@ -36,17 +36,8 @@ const RegisterDogPage = () => {
   const handleSubmit = async (e) => {
     e.preventDefault();
     try {
-      const formData = new FormData();
-      formData.append('dog_name', formData.dog_name);
-      formData.append('dog_breed', formData.dog_breed);
-      formData.append('dog_birthdate', formData.dog_birthdate);
-      formData.append('dog_gender', formData.dog_gender);
-      formData.append('dog_photo', formData.dog_photo);
-  
-      console.log("Form data:", formData);
-  
-      const res = await registerDog(formData);
-  
+      const res = await registerDog(new FormData(e.target));
+
       alert('Dog registered successfully');
       router.push(`/home/${formData.user_id}`);
     } catch (error) {

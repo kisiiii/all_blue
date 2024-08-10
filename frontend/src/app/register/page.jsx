@@ -23,7 +23,7 @@ const Register = () => {
         password: password,
       };
       await registerUser(userData);
-      router.push("/login");
+      router.push("/register_dog");
     } catch (error) {
       console.error("Registration failed:", error.message);
       alert("Registration failed: " + error.message);

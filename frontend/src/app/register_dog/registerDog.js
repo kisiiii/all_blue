@@ -1,10 +1,10 @@
-export default async function registerDog(userData) {
+export default async function registerDog(formData) {
   try {
-    console.log("Sending request with data:", userData);
+    console.log("Sending request with data:", formData);
 
     const res = await fetch(`${process.env.API_ENDPOINT}/dogs`, {
       method: "POST",
-      body: userData, // FormDataオブジェクトを直接送信
+      body: formData, // FormDataオブジェクトを直接送信
     });
 
     if (!res.ok) {
