@@ -1,21 +1,25 @@
 # uname() error回避
 import platform
 print("platform", platform.uname())
- 
 
 from sqlalchemy import create_engine, insert, delete, update, select
 import sqlalchemy
 from sqlalchemy.orm import sessionmaker
 from sqlalchemy.exc import IntegrityError,SQLAlchemyError
 from sqlalchemy.sql import func
-import json
 import pandas as pd
-from datetime import datetime, date
+from datetime import datetime, timedelta, timezone
 from math import radians, cos, sin, sqrt, atan2
 
 from db_control.connect import engine
 from db_control.mymodels import Users, Dogs, DogBooks, Locations, Encounts, EarnPoints, UsePoints
- 
+
+# 日本時間のタイムゾーン
+JST = timezone(timedelta(hours=9))
+def get_current_time():
+    return datetime.now(JST)
+
+
 
 def myinsert(mymodel, values):
     # session構築
@@ -41,7 +45,7 @@ def myinsert(mymodel, values):
 def myselect(mymodel, column_name, value):
     Session = sessionmaker(bind=engine)
     session = Session()
-    
+
     try:
         # カラム名を動的に取得
         column = getattr(mymodel, column_name)
@@ -161,7 +165,7 @@ def check_and_save_encounters(user_id, RTLocations, Encounts):
 
         # 他のユーザーの位置情報を取得（対象のユーザーは除外）
         other_users_locations = session.query(RTLocations).filter(RTLocations.user_id != user_id).all()
-        today = datetime.now().date()
+        today = get_current_time().date()
 
         for loc in other_users_locations:
             distance = haversine(target_user_location.longitude, target_user_location.latitude, loc.longitude, loc.latitude)
@@ -185,7 +189,7 @@ def check_and_save_encounters(user_id, RTLocations, Encounts):
                         partner_user_id=loc.user_id,
                         partner_latitude=loc.latitude,
                         partner_longitude=loc.longitude,
-                        encount_date=datetime.now()
+                        encount_date=get_current_time()
                     )
                     session.add(new_encounter)
 
@@ -197,6 +201,63 @@ def check_and_save_encounters(user_id, RTLocations, Encounts):
         return {"status": "error", "message": str(e)}
     finally:
         session.close()
+
+
+# すれ違いポイント計算
+def calculate_and_add_points(encount_id, user_id):
+    print(f"Calculating points for user_id: {user_id} and encount_id: {encount_id}")
+    # セッションの作成
+    Session = sessionmaker(bind=engine)
+    session = Session()
+
+    try:
+        # encountsテーブルの情報を取得
+        encount = session.query(Encounts).filter(Encounts.encount_id == encount_id).first()
+        print(f"Encount retrieved: {encount}")
+
+        if encount:
+            # EarnPointsテーブルに同じencount_idが既に存在するか確認
+            existing_earn_point = session.query(EarnPoints).filter(EarnPoints.encount_id == encount_id).first()
+            if existing_earn_point:
+                print(f"EarnPoint with encount_id {encount_id} already exists, skipping insert.")
+                return
+
+            # dogsテーブルからパートナーユーザーに対応する犬の数をカウント
+            dog_count = session.query(func.count(Dogs.dog_id)).filter(Dogs.user_id == encount.partner_user_id).scalar()
+            print(f"Dog count for partner_user_id {encount.partner_user_id}: {dog_count}")
+
+            # ポイント計算: すれ違ったユーザーの飼っている犬の数 × 100
+            points = dog_count * 100
+
+            # earn_pointsテーブルに挿入
+            new_earn_point = EarnPoints(
+                user_id=user_id,
+                encount_id=encount_id,
+                point=points,
+                earn_point_datetime=get_current_time()
+            )
+            session.add(new_earn_point)
+            print(f"Earn points record created: {new_earn_point}")
+
+            # ユーザーの総ポイントを更新
+            user = session.query(Users).filter(Users.user_id == user_id).first()
+            if user:
+                user.point += points
+                print(f"Updated user {user_id} points to {user.point}")
+
+            session.commit()
+            print(f"{points}ポイントがユーザー{user_id}に追加されました。")
+        else:
+            print(f"Encount ID {encount_id} が見つかりません。")
+
+    except Exception as e:
+        session.rollback()
+        print(f"ポイントの追加中にエラーが発生しました: {e}")
+        raise e  # 例外を再スローして上位でキャッチできるようにする
+    finally:
+        session.close()
+
+
 
 # RTLocationsへのデータ挿入とエンカウント処理を行う
 def insert_rtlocation_and_process_encounters(RTLocations, Encounts, user_id, latitude, longitude):
@@ -216,11 +277,66 @@ def insert_rtlocation_and_process_encounters(RTLocations, Encounts, user_id, lat
             session.rollback()
             return {"status": "error", "message": result["message"]}
 
+        # ここで新しく挿入されたエンカウントを取得し、ポイントを計算する
+        new_encounters = session.query(Encounts).filter(
+            Encounts.user_id == user_id,
+            Encounts.latitude == latitude,
+            Encounts.longitude == longitude
+        ).all()
+
+        for new_encounter in new_encounters:
+            print(f"New encounter detected: {new_encounter}")
+            calculate_and_add_points(new_encounter.encount_id, new_encounter.user_id)
+
+        session.commit()
         return {"status": "success", "data": result}
+
+    except Exception as e:
+        session.rollback()
+        print(f"Error during processing: {str(e)}")
+        raise e
+    finally:
+        session.close()
+
+
+
+# RTLocationsへのデータ更新とエンカウント処理を行う
+def update_rt_location_and_process_encounters(user_id, latitude, longitude, RTLocations, Encounts):
+    Session = sessionmaker(bind=engine)
+    session = Session()
+
+    try:
+        # RTLocationsテーブルのユーザーの位置情報を更新
+        session.query(RTLocations).filter(RTLocations.user_id == user_id).update({
+            RTLocations.latitude: latitude,
+            RTLocations.longitude: longitude
+        })
+        session.commit()
+
+        # すれ違いの検出とエンカウント処理を実行
+        result = check_and_save_encounters(user_id, RTLocations, Encounts)
+
+        # エンカウントが挿入された後にポイントを計算して付与する
+        new_encounters = session.query(Encounts).filter(
+            Encounts.user_id == user_id,
+            Encounts.latitude == latitude,
+            Encounts.longitude == longitude
+        ).all()
+
+        for new_encounter in new_encounters:
+            print(f"New encounter detected: {new_encounter}")
+            calculate_and_add_points(new_encounter.encount_id, new_encounter.user_id)
+
+        if result["status"] == "error":
+            session.rollback()
+            return {"status": "error", "message": result["message"]}
+
+        session.commit()
+        return {"status": "success", "data": result}
+
     except SQLAlchemyError as e:
         session.rollback()
         return {"status": "error", "message": str(e)}
     finally:
         session.close()
-
 

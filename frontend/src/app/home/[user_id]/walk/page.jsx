@@ -95,7 +95,12 @@ const WalkPage = ({ params }) => {
     if (navigator.geolocation) {
       navigator.geolocation.getCurrentPosition((position) => {
         const { latitude, longitude } = position.coords;
-        const timestamp = new Date().toISOString();
+        // 現在の日時を日本時間で取得
+        const now = new Date();
+        const jstOffset = 9 * 60; // 日本時間はUTC+9時間
+        const jstTime = new Date(now.getTime() + jstOffset * 60 * 1000);
+        // ISO 形式の文字列としてフォーマット
+        const timestamp = jstTime.toISOString();
 
         // locationsエンドポイントに位置情報を送信
         fetch(`${process.env.API_ENDPOINT}/locations`, {
@@ -144,8 +149,8 @@ const WalkPage = ({ params }) => {
       //↑ 初回実行済みとしてフラグを下げる。getCurrentPositionAndUpdate();が２回実行されるのを防ぐ
     }
 
-    // 30秒ごとにGPS情報を取得
-    intervalRef.current = setInterval(getCurrentPositionAndUpdate, 30000);
+    // 10秒ごとにGPS情報を取得
+    intervalRef.current = setInterval(getCurrentPositionAndUpdate, 10000);
 
     window.addEventListener("beforeunload", handleBeforeUnload);
 

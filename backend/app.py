@@ -166,7 +166,7 @@ def read_one_RTLocations():
 def insert_rtlocation():
     values = request.get_json()
     user_id = values.get("user_id")
-    
+
     if not user_id:
         return jsonify({"error": "user_id is required"}), 400
 
@@ -181,15 +181,12 @@ def insert_rtlocation():
 
     return jsonify(result), 200
 
-if __name__ == "__main__":
-    app.run(debug=True)
-
 # リアルタイムでユーザーのGPS情報を更新するエンドポイント
 @app.route("/update_rtlocation", methods=['PUT'])
 def update_rtlocation():
     values = request.get_json()
     user_id = values.get("user_id")
-    
+
     if not user_id:
         return jsonify({"error": "user_id is required"}), 400
 
@@ -214,6 +211,10 @@ def clear_rtlocation():
     # 該当のuser_idデータを削除
     tmp = crud.mydelete(model, user_id)
     return jsonify({"message": "User GPS data cleared"}), 200
+
+
+if __name__ == "__main__":
+    app.run(debug=True)
 
 
 """# すれ違い検知
