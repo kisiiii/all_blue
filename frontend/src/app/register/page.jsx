@@ -22,8 +22,10 @@ const Register = () => {
         mail: email,
         password: password,
       };
-      await registerUser(userData);
-      router.push("/register_dog");
+      const result = await registerUser(userData);
+
+      // ユーザー登録が成功したら、/register_dog/${result.user_id}にリダイレクト
+      router.push(`/register_dog/${result.user_id}`);
     } catch (error) {
       console.error("Registration failed:", error.message);
       alert("Registration failed: " + error.message);

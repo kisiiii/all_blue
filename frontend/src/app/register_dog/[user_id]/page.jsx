@@ -1,15 +1,14 @@
 "use client";
 
-import { useState, useEffect } from 'react';
-import { useParams, useRouter } from 'next/navigation';
-import registerDog from './registerDog';
+import { useState, useEffect } from "react";
+import { useParams, useRouter } from "next/navigation";
 
 const RegisterDogPage = () => {
   const [formData, setFormData] = useState({
-    dog_name: '',
-    dog_breed: '',
-    dog_birthdate: '',
-    dog_gender: '',
+    dog_name: "",
+    dog_breed: "",
+    dog_birthdate: "",
+    dog_gender: "",
     dog_photo: null,
   });
   const params = useParams();
@@ -35,10 +34,49 @@ const RegisterDogPage = () => {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    try {
-      const res = await registerDog(new FormData(e.target));
 
-      alert('Dog registered successfully');
+    try {
+      // 画像をまず `/upload` エンドポイントに送信
+      const imageData = new FormData();
+      imageData.append("file", formData.dog_photo);
+
+      const uploadRes = await fetch(`${process.env.API_ENDPOINT}/upload`, {
+        method: "POST",
+        body: imageData,
+      });
+
+      if (!uploadRes.ok) {
+        const errorData = await uploadRes.json();
+        throw new Error(errorData.error || "Failed to upload image");
+      }
+
+      const uploadResult = await uploadRes.json();
+      const imageUrl = uploadResult.url;
+
+      const dogData = {
+        dog_name: formData.dog_name,
+        dog_breed: formData.dog_breed,
+        dog_birthdate: formData.dog_birthdate,
+        dog_gender: formData.dog_gender,
+        dog_photo: imageUrl,
+        user_id: formData.user_id,
+      };
+
+      const dogRes = await fetch(`${process.env.API_ENDPOINT}/dogs`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify(dogData),
+      });
+
+      if (!dogRes.ok) {
+        const errorData = await dogRes.json();
+        throw new Error(errorData.error || "Failed to register dog");
+      }
+
+      const dogResult = await dogRes.json();
+      //alert("Dog registered successfully"); 必要なら表示
       router.push(`/home/${formData.user_id}`);
     } catch (error) {
       alert(`Error: ${error.message}`);
@@ -152,6 +190,3 @@ const RegisterDogPage = () => {
   );
 };
 export default RegisterDogPage;
-
-
-

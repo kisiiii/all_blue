@@ -62,14 +62,23 @@ def read_one_User():
 def create_Users():
     model = mymodels.Users
     values = request.get_json()
-    
+
     # user_birthdateをdateオブジェクトに変換
     if 'user_birthdate' in values:
         values['user_birthdate'] = datetime.strptime(values['user_birthdate'], '%Y-%m-%d').date()
-    
-    tmp = crud.myinsert(model, values)
-    result = crud.myselect(model, 'user_id', values.get("user_id"))
-    return jsonify(result), 200
+
+    # 手動でuser_idを生成
+    user_id = str(uuid.uuid4())
+    values['user_id'] = user_id
+
+    # データベースに挿入
+    result = crud.myinsert(model, values)
+
+    # 挿入が成功した場合
+    if result["status"] == "success":
+        return jsonify({"message": "User created successfully", "user_id": user_id}), 200
+    else:
+        return jsonify({"error": result["message"]}), 400
 
 @app.route("/users", methods=['PUT'])
 def update_user():
