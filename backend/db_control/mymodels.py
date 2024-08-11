@@ -28,7 +28,7 @@ class Dogs(Base):
     dog_breed = Column(String)
     dog_birthdate = Column(Date)
     dog_gender = Column(String)
-    dog_photo = Column(BINARY)  # 新しいバイナリデータ用のカラム
+    dog_photo = Column(String) # 画像のURLを挿入
 
 # 図鑑DB
 class DogBooks(Base):

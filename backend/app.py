@@ -1,12 +1,24 @@
 from flask import Flask, request
 from flask import jsonify
-import json
 from flask_cors import CORS
 
 from db_control import crud, mymodels
 
-import requests
 from datetime import datetime, timezone
+from google.cloud import storage
+import os
+from dotenv import load_dotenv
+import uuid
+
+
+# .envファイルを読み込む
+load_dotenv()
+
+# Google Cloud Storageの設定
+os.environ["GOOGLE_APPLICATION_CREDENTIALS"] = os.getenv("GOOGLE_APPLICATION_CREDENTIALS")
+storage_client = storage.Client()
+bucket_name = os.getenv("BUCKET_NAME")
+bucket = storage_client.bucket(bucket_name)
 
 app = Flask(__name__)
 CORS(app)
@@ -88,32 +100,34 @@ def read_one_Dog():
 def create_Dogs():
     try:
         app.logger.debug("Request headers: %s", request.headers)
-        app.logger.debug("Request form: %s", request.form)
-        app.logger.debug("Request files: %s", request.files)
+        app.logger.debug("Request JSON: %s", request.get_json())
 
-        if 'dog_photo' not in request.files:
-            return jsonify({"message": "No file part"}), 400
+        data = request.get_json()  # JSONデータを取得
 
-        file = request.files['dog_photo']
-        if file.filename == '':
-            return jsonify({"message": "No selected file"}), 400
+        # 必須フィールドのチェック
+        if 'dog_photo' not in data or not data['dog_photo']:
+            return jsonify({"error": "dog_photo URL is required"}), 400
+        if 'user_id' not in data or not data['user_id']:
+            return jsonify({"error": "user_id is required"}), 400
 
-        file_data = file.read()  # ファイルをバイナリデータとして読み込む
+        # `dog_birthdate` を `date` オブジェクトに変換
+        if 'dog_birthdate' in data:
+            try:
+                data['dog_birthdate'] = datetime.strptime(data['dog_birthdate'], '%Y-%m-%d').date()
+            except ValueError:
+                return jsonify({"error": "Invalid date format, should be YYYY-MM-DD"}), 400
 
-        values = request.form.to_dict()
-        values['dog_photo'] = file_data  # バイナリデータを保存
-
-        # dog_birthdateをdateオブジェクトに変換
-        if 'dog_birthdate' in values:
-            values['dog_birthdate'] = datetime.strptime(values['dog_birthdate'], '%Y-%m-%d').date()
-
+        # データベースにデータを挿入
         model = mymodels.Dogs
-        tmp = crud.myinsert(model, values)
-        result = crud.myselect(model, 'dog_id', tmp['dog_id'])
-        return jsonify(result), 201
+        crud.myinsert(model, data)
+
+        # 成功メッセージを返す
+        return jsonify({"message": "Dog registered successfully"}), 201
+
     except Exception as e:
         app.logger.error(f"Error occurred: {e}")
-        return jsonify({"message": str(e)}), 500
+        return jsonify({"error": str(e)}), 500
+
 
 
 # GPS_DB
@@ -212,99 +226,32 @@ def clear_rtlocation():
     tmp = crud.mydelete(model, user_id)
     return jsonify({"message": "User GPS data cleared"}), 200
 
+# 画像をGCPにアップロード
+@app.route("/upload", methods=['POST'])
+def upload_image():
+    if 'file' not in request.files:
+        return jsonify({"error": "No file part"}), 400
 
-if __name__ == "__main__":
-    app.run(debug=True)
+    file = request.files['file']
+    if file.filename == '':
+        return jsonify({"error": "No selected file"}), 400
 
+    # ファイル名に一意の識別子を追加
+    unique_filename = f"{uuid.uuid4()}_{file.filename}"
 
-"""# すれ違い検知
-@app.route("/process_encounters", methods=['POST'])
-def process_encounters():
-    data = request.get_json()
-    user_id = data.get("user_id")
-    
-    if not user_id:
-        return jsonify({"error": "user_id is required"}), 400
-    
-    result = crud.check_and_save_encounters(user_id, mymodels.RTLocations, mymodels.Encounts)
-    
-    if result["status"] == "error":
-        return jsonify({"error": result["message"]}), 500
+    # バケットにアップロード
+    blob = bucket.blob(unique_filename)
+    try:
+        blob.upload_from_file(file)
+    except Exception as e:
+        return jsonify({"error": f"Failed to upload file: {str(e)}"}), 500
 
-    return jsonify(result), 200"""
+    # ファイルの公開URLを取得
+    blob.make_public()
+    public_url = blob.public_url
 
+    return jsonify({"url": public_url}), 200
 
-
-"""
-@app.route("/customers", methods=['PUT'])
-def update_customer():
-    print("I'm in")
-    values = request.get_json()
-    print(values)
-    values_original = values.copy()
-    model = mymodels.Customers
-    # values = {  "customer_id": "C004",
-    #             "customer_name": "鈴木C子",
-    #             "age": 44,
-    #             "gender": "男"}
-    tmp = crud.myupdate(model, values)
-    result = crud.myselect(mymodels.Customers, values_original.get("customer_id"))
-    return result, 200
-
-@app.route("/customers", methods=['DELETE'])
-def delete_customer():
-    model = mymodels.Customers
-    target_id = request.args.get('customer_id') #クエリパラメータ
-    result = crud.mydelete(model, target_id)
-    return result, 200
-
-@app.route("/fetchtest")
-def fetchtest():
-    response = requests.get('https://jsonplaceholder.typicode.com/users')
-    return response.json(), 200
-
-
-
-@app.route("/users", methods=['GET'])
-# http://127.0.0.1:5000/users?user_id=2ef7b8ea-6399-4827-b4f3-c092d48608ee
-def read_one_user():
-    target_id = request.args.get('user_id')
-    result = crud.myselectUser(mymodels.Users, target_id)
-    if not result:
-        return jsonify({"error": "User not found"}), 404
-    # シリアライズしてJSON形式で返す
-    user_data = []
-    for user in result:
-        user_data.append({
-            "user_id": user.user_id,
-            "user_name": user.user_name,
-            "user_birthdate": user.user_birthdate.strftime('%Y-%m-%d'),
-            "user_gender": user.user_gender,
-            "mail": user.mail,
-            "password": user.password
-        })
-    return jsonify(user_data), 200
-
-
-@app.route("/dogs", methods=['GET'])
-def read_one_dog():
-    target_id = request.args.get('dog_id')
-    result = crud.myselect(mymodels.Dogs, target_id)
-    if not result:
-        return jsonify({"error": "Dog not found"}), 404
-    # シリアライズしてJSON形式で返す
-    dog_data = []
-    for dog in result:
-        dog_data.append({
-            "user_id": dog.user_id,
-            "dog_name": dog.dog_name,
-            "dog_birthdate ": dog.dog_birthdate.strftime('%Y-%m-%d'),
-            "dog_breed": dog.user_gender,
-            "dog_gender": dog.dog_gender,
-        })
-    return jsonify(dog_data), 200
-
-"""
 
 if __name__ == "__main__":
     app.run(debug=True)
