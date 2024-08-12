@@ -44,32 +44,35 @@ const UserHomePage = ({ params }) => {
       <button className="walk-button" onClick={handleStartWalk}>
         さんぽスタート
       </button>
-
-      <style jsx>{`
-        .container {
-          display: flex;
-          flex-direction: column;
-          align-items: center;
-          padding: 20px;
-          background-color: #f0e2d0;
-          height: 100vh;
-        }
-        .points-container {
-          display: flex;
-          justify-content: space-between;
-          width: 100%;
-          max-width: 400px;
-          margin-bottom: 20px;
-        }
-        .points {
-          background-color: white;
-          padding: 10px;
-          border-radius: 8px;
-          box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
-          text-align: center;
-          width: 45%;
-          border: 2px solid #d0c4af; /* 白い枠 */
-        }
+    <style jsx>{`
+      .container {
+        display:flex;
+        width: 390px;
+        height: 844px;
+        flex-grow: 0;
+        padding: 73px 4px 7px 0;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        background-color: #c6a286;
+      }
+      .points-container {
+        display:flex;
+        width: 336px;
+        height: 170px;
+        margin: 0 21px 24px 29px;
+        padding: 32px 20px 34px 13px;
+        border-radius: 20px;
+        background-color: #fff;
+      }
+      .points {
+        max-width: 303px;
+        max-height: 43px;
+        margin: 0 0 18px;
+        padding: 7px 23px 8px 26px;
+        border-radius: 50px;
+        background-color: #e3f6f4;
+      }
         .profile-container {
           text-align: center;
           margin-bottom: 20px;
