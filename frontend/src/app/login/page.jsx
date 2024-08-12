@@ -22,21 +22,21 @@ const Login = () => {
 
   return (
     <div className="login-container">
-      <h1>Login</h1>
+      <h1 style={{ fontSize: '30px', color: '#333' }}>Login</h1>
       <form onSubmit={handleSubmit} className="login-form">
         <div className="input-box">
-          <label>Email:</label>
           <input
             type="email"
+            placeholder="Email address"
             value={email}
             onChange={(e) => setEmail(e.target.value)}
             required
           />
         </div>
         <div className="input-box">
-          <label>Password:</label>
           <input
             type="password"
+            placeholder="Password"
             value={password}
             onChange={(e) => setPassword(e.target.value)}
             required
@@ -53,48 +53,56 @@ const Login = () => {
           flex-direction: column;
           align-items: center;
           justify-content: center;
-          height: 100vh;
-          background-color: #f0f0f0;
+          background-color: #fff;
+          font-family: Montserrat;
+          font-size: 18px;
+          font-weight: 600;
+          font-stretch: normal;
+          font-style: normal;
         }
         .login-form {
           display: flex;
           flex-direction: column;
-          width: 300px;
-          padding: 20px;
-          border: 1px solid #ccc;
-          border-radius: 8px;
+          width: 382px;
+          margin: 60px 0 43px;
+          padding: 24px 31px 22px 24px;
           background-color: #fff;
         }
         .input-box {
           margin-bottom: 15px;
-        }
-        .input-box label {
-          display: block;
-          margin-bottom: 5px;
+          border-radius: 16px;
+          border: solid 2px #18191f;
         }
         .input-box input {
           width: 100%;
           padding: 8px;
           border: 1px solid #ccc;
-          border-radius: 4px;
+          border-radius: 16px;
         }
         button {
           padding: 10px;
-          background-color: #0070f3;
+          background-color: #c6a286;
           color: white;
           border: none;
-          border-radius: 4px;
+          border-radius: 16px;
           cursor: pointer;
         }
         button:hover {
-          background-color: #005bb5;
+          background-color: #b7906c;
         }
         .register-button {
-          margin-top: 10px;
-          background-color: #28a745;
+          padding: 10px;
+          background-color: #fff;
+          color: black;
+          width: 382px;
+          border-radius: 16px;
+          cursor: pointer;
+          margin-bottom: 15px;
+          border-radius: 16px;
+          border: solid 2px #18191f;
         }
         .register-button:hover {
-          background-color: #218838;
+          background-color: #f7e7cf;
         }
       `}</style>
     </div>
