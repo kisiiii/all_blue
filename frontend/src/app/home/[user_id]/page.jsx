@@ -1,14 +1,22 @@
 "use client";
 
-import { useRouter } from "next/navigation";
+import { useRouter } from 'next/router';
+import React, { useState, useEffect } from 'react';
+import Image from 'next/image';  // Imageコンポーネントをインポート
 import Link from "next/link";
 
-const UserHomePage = ({ params }) => {
-  const { user_id } = params;
-  const router = useRouter();
+export default function Home() {
+  const [dogData, setDogData] = useState({});
+
+  useEffect(() => {
+    const userId = window.location.pathname.split('/').pop();
+    fetch(`/dogs?user_id=${userId}`, { method: 'GET' })
+      .then((res) => res.json())
+      .then((data) => setDogData(data));
+  }, []);
 
   const handleStartWalk = () => {
-    router.push(`/home/${user_id}/walk`);
+    router.push(`/home/${dogData.user_id}/walk`);
   };
 
   return (
@@ -27,12 +35,12 @@ const UserHomePage = ({ params }) => {
       <div className="profile-container">
         <div className="profile-border">
           <img
-            src="/path-to-image/moana.png" // 画像パスを適切に変更してください
-            alt="Moana"
+            src={dogData.dog_photo}  // dog_photoを表示
+            alt={dogData.dog_name}
             className="profile-image"
           />
         </div>
-        <p className="dog-name">モアナ</p>
+        <p className="dog-name">{dogData.dog_name}</p>
         <p className="pawpo-level">PAWPOレベル</p>
         <div className="level-icons">
           <span role="img" aria-label="medal">🏅</span>
@@ -122,6 +130,5 @@ const UserHomePage = ({ params }) => {
       `}</style>
     </div>
   );
-};
+}
 
-export default UserHomePage;
