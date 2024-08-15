@@ -1,3 +1,31 @@
+@import url("https://fonts.googleapis.com/css2?family=Montserrat:wght@700;800&display=swap");
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
+
+body {
+  @apply leading-[normal] m-0;
+}
+
+*,
+::before,
+::after {
+  border-width: 0;
+}
+
+/* ここに追記 */
+.container {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  flex-direction: column; /* 縦方向に配置する場合 */
+  min-height: 100vh; /* ビューポートの高さを占める */
+}
+
+/* 全体表示に対応するためのレスポンシブ設定 */
+@media (max-width: 768px) {
+  .container {
+    width: 100%; /* スマホの場合、全体表示 */
+    padding: 10px; /* コンテンツに余白を追加 */
+  }
+}

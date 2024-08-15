@@ -138,6 +138,19 @@ def create_Dogs():
         return jsonify({"error": str(e)}), 500
 
 
+@app.route('/get_dog_data', methods=['GET'])
+def get_dog_data():
+    user_id = request.args.get('user_id')
+    if not user_id:
+        return jsonify({"error": "user_id is required"}), 400
+
+    dog_data = crud.get_dog_data_by_user_id(user_id)
+    if dog_data:
+        return jsonify(dog_data), 200
+    else:
+        return jsonify({"error": "No data found for the provided user_id"}), 404
+
+
 
 # GPS_DB
 @app.route("/alllocations", methods=['GET'])
@@ -261,6 +274,27 @@ def upload_image():
 
     return jsonify({"url": public_url}), 200
 
+# home画面のポイント表示
+@app.route('/get_user_points', methods=['GET'])
+def get_user_points():
+    user_id = request.args.get('user_id')
+    if not user_id:
+        return jsonify({"error": "user_id is required"}), 400
+
+    try:
+        # 今日の日付のポイント合計
+        today = datetime.now().date()
+        today_points = crud.get_today_points(user_id, today)
+
+        # 累計ポイント
+        total_points = crud.get_total_points(user_id)
+
+        return jsonify({
+            "today_points": today_points,
+            "total_points": total_points
+        }), 200
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500
 
 if __name__ == "__main__":
     app.run(debug=True)

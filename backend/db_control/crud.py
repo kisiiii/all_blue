@@ -6,7 +6,7 @@ from sqlalchemy import create_engine, insert, delete, update, select
 import sqlalchemy
 from sqlalchemy.orm import sessionmaker
 from sqlalchemy.exc import IntegrityError,SQLAlchemyError
-from sqlalchemy.sql import func
+from sqlalchemy.sql import func, and_
 import pandas as pd
 from datetime import datetime, timedelta, timezone
 from math import radians, cos, sin, sqrt, atan2
@@ -337,6 +337,54 @@ def update_rt_location_and_process_encounters(user_id, latitude, longitude, RTLo
     except SQLAlchemyError as e:
         session.rollback()
         return {"status": "error", "message": str(e)}
+    finally:
+        session.close()
+
+
+# dog情報を一つだけ取得
+def get_dog_data_by_user_id(user_id):
+    Session = sessionmaker(bind=engine)
+    session = Session()
+
+    try:
+        # dog_idが若い順にソートして最初のレコードを取得
+        dog = session.query(Dogs).filter(Dogs.user_id == user_id).order_by(Dogs.dog_id.asc()).first()
+        if dog:
+            print(f"Found dog: {dog.dog_name}, {dog.dog_photo}")  # デバッグ用
+            return {"dog_name": dog.dog_name, "dog_photo": dog.dog_photo}
+        print("No dog found")  # デバッグ用
+        return None
+    finally:
+        session.close()
+
+
+# 今日の獲得ポイントの取得
+def get_today_points(user_id, today):
+    Session = sessionmaker(bind=engine)
+    session = Session()
+
+    try:
+        # 今日の日付のポイント合計を計算
+        today_points = session.query(func.sum(EarnPoints.point)).filter(
+            and_(
+                EarnPoints.user_id == user_id,
+                func.date(EarnPoints.earn_point_datetime) == today
+            )
+        ).scalar()
+        return today_points or 0
+    finally:
+        session.close()
+
+
+# 累計ポイントの取得
+def get_total_points(user_id):
+    Session = sessionmaker(bind=engine)
+    session = Session()
+
+    try:
+        # usersテーブルから累計ポイントを取得
+        total_points = session.query(Users.point).filter(Users.user_id == user_id).scalar()
+        return total_points or 0
     finally:
         session.close()
 
