@@ -2,6 +2,7 @@
 
 import { useEffect, useRef, useState } from "react";
 import { useRouter, usePathname } from "next/navigation";
+import Image from 'next/image';
 
 const WalkPage = ({ params }) => {
   const router = useRouter();
@@ -160,33 +161,52 @@ const WalkPage = ({ params }) => {
     };
   }, [user_id, isInserted]);
 
+  const handlePause = () => {
+    setIsPaused(true);
+    clearInterval(intervalRef.current);
+  };
+
+  const handleResume = () => {
+    setIsPaused(false);
+    intervalRef.current = setInterval(getCurrentPositionAndUpdate, 10000);
+  };
+
   const handleEndWalk = () => {
     clearInterval(intervalRef.current);
     clearRTLocation();
-    router.push(`/home/${user_id}`);
+    router.push(`/home/${user_id}/walk/result`);
   };
 
   return (
-    <div>
-      <h1>散歩中</h1>
-      <button className="styled-button" onClick={handleEndWalk}>
-        散歩終了
-      </button>
-      <style jsx>{`
-        .styled-button {
-          padding: 10px;
-          background-color: #0070f3;
-          color: white;
-          border: none;
-          border-radius: 4px;
-          cursor: pointer;
-        }
-        .styled-button:hover {
-          background-color: #005bb5;
-        }
-      `}</style>
+    <div className="container flex flex-col items-center justify-between min-h-screen w-full p-10 md:p-0">
+      <div className="relative w-full max-w-md bg-tan h-[844px] overflow-hidden text-center text-base text-black font-montserrat">
+        <div className="mt-10 mb-10">
+          <div className="relative rounded-31xl bg-azure w-[303px] h-[43px] mx-auto cursor-pointer">
+            <div className="absolute top-[6px] left-[36px] leading-[28px] font-extrabold inline-block w-[254px] h-7">
+              近くにいるPAWPOS
+            </div>
+          </div>
+        </div>
+        <div className="relative w-full h-auto mt-4 flex justify-center">
+          <div className="w-[80%]" style={{ border: '2px solid black', borderRadius: '15px', overflow: 'hidden' }}>
+            <Image src="/Dogs_near_here.png" alt="近くにいる犬" layout="responsive" width={700} height={300} objectFit="cover" />
+          </div>
+        </div>
+        <div className="absolute bottom-[5%] left-1/2 transform -translate-x-1/2 flex justify-between w-[80%] h-[90px]">
+          <button onClick={handlePause} className="flex items-center justify-center rounded-full bg-azure w-[78px] h-[78px]">
+            <span className="text-white text-6xl font-extrabold">||</span>
+          </button>
+          <button onClick={handleResume} className="flex items-center justify-center rounded-full bg-azure w-[78px] h-[78px]">
+            <span className="text-white text-6xl font-extrabold">▶</span>
+          </button>
+          <button onClick={handleEndWalk} className="flex items-center justify-center rounded-full bg-azure w-[78px] h-[78px]">
+            <span className="text-white text-6xl font-extrabold">■</span>
+          </button>
+        </div>
+      </div>
     </div>
   );
 };
+
 
 export default WalkPage;
