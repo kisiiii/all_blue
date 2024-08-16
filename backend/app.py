@@ -296,5 +296,17 @@ def get_user_points():
     except Exception as e:
         return jsonify({"error": str(e)}), 500
 
+#すれ違いDB
+@app.route("/encounts", methods=['GET'])
+def get_encounts():
+    user_id = request.args.get('user_id')
+    encounts = crud.myselectAll(mymodels.Encounts, mymodels.Encounts.user_id == user_id)
+    partner_ids = [encount.partner_user_id for encount in encounts]
+    
+    dogs = crud.myselectAll(mymodels.Dogs, mymodels.Dogs.user_id.in_(partner_ids))
+    dog_data = [{'name': dog.dog_name, 'photo': dog.dog_photo} for dog in dogs]
+    
+    return jsonify(dog_data), 200
+
 if __name__ == "__main__":
     app.run(debug=True)
