@@ -71,66 +71,68 @@ const Component = () => {
         <meta name="viewport" content="width=device-width, initial-scale=1.0" />
         <title>My Page</title>
       </Head>
-      <div className="container flex flex-col items-center justify-center min-h-screen w-full p-10 md:p-0">
+      <div className="container flex flex-col items-center justify-between min-h-screen w-full p-10 md:p-0">
         <div className="relative w-full max-w-md bg-tan h-[844px] overflow-hidden text-center text-base text-black font-montserrat">
-          <div className="absolute top-[73px] left-[32px] relative rounded-xl bg-white w-[336px] h-[170px]">
-            <div className="absolute top-[32px] left-[10px] rounded-31xl bg-azure w-[303px] h-[43px] cursor-pointer" />
-            <div className="absolute top-[39px] left-[36px] leading-[28px] font-extrabold inline-block w-[254px] h-7">
-              累計ポイント 　　　　　{points.total_points} P
+          <div className="mt-10 mb-5">
+
+            <div className="relative top-[30px] rounded-xl bg-white w-[350px] h-[170px] mx-auto">
+              <div className="absolute top-[32px] left-[15px] rounded-31xl bg-azure w-[320px] h-[43px] cursor-pointer"></div>
+              <div className="absolute top-[39px] left-[36px] leading-[28px] font-extrabold inline-block w-[254px] h-7">
+                累計ポイント 　　　　　{points.total_points} P
+              </div>
+
+              <div className="absolute top-[93px] left-[15px] rounded-31xl bg-azure w-[320px] h-[43px]"></div>
+              <div className="absolute top-[101px] left-[32px] leading-[28px] font-extrabold inline-block w-[264px] h-[27px]">
+                今日のポイント　　　　 {points.today_points} P
+              </div>
             </div>
 
-            <div className="absolute top-[93px] left-[10px] rounded-31xl bg-azure w-[303px] h-[43px]" />
-            <div className="absolute top-[101px] left-[32px] leading-[28px] font-extrabold inline-block w-[264px] h-[27px]">
-              今日のポイント　　　　 {points.today_points} P
-            </div>
-          </div>
-
-          <div className="absolute top-[98px] left-[32px] relative rounded-xl bg-white w-[336px] h-[282px]">
-            <div className="absolute top-[186px] left-1/2 transform -translate-x-1/2 text-5xl leading-[28px] font-extrabold text-tan">
-              {dogData.dog_name}
-            </div>
-            <div className="absolute top-[34px] left-[100px] rounded-full border-4 border-paleturquoise w-32 h-32 flex items-center justify-center">
+            <div className="relative top-[50px] rounded-xl bg-white w-[350px] h-[282px] mx-auto">
+            <div className="absolute top-[160px] left-[80px] rounded-31xl bg-paleturquoise w-[190px] h-[43px]"></div>
+              <div className="absolute top-[170px] left-1/2 transform -translate-x-1/2 text-5xl leading-[28px] font-extrabold text-black">
+                {dogData.dog_name}
+              </div>
+              <div className="absolute top-[34px] left-[100px] rounded-full border-8 border-paleturquoise w-32 h-32 flex items-center justify-center">
+                <img
+                  className="rounded-full w-full h-full object-cover"
+                  alt="dog"
+                  src={dogData.dog_photo}
+                />
+              </div>
+              <div className="absolute top-[224px] left-[15px] rounded-31xl bg-azure w-[320px] h-[43px]"></div>
+              <b className="absolute top-[232px] left-[53px] leading-[28px]">
+                PAWPOレベル
+              </b>
               <img
-                className="rounded-full w-full h-full object-cover"
-                alt="dog"
-                src={dogData.dog_photo}
+                className="absolute top-[230px] left-[190px] w-6 overflow-hidden"
+                alt="level"
+                src="/level.png"
+              />
+              <img
+                className="absolute top-[230px] left-[222px] w-6 overflow-hidden"
+                alt="level"
+                src="/level.png"
               />
             </div>
-            <div className="absolute top-[224px] left-[16px] rounded-31xl bg-azure w-[303px] h-[43px]" />
-            <b className="absolute top-[232px] left-[53px] leading-[28px]">
-              PAWPOレベル
-            </b>
-            <img
-              className="absolute top-[235px] left-[190px] w-6 h-6 overflow-hidden"
-              alt="level"
-              src="/level.png"
-            />
-            <img
-              className="absolute top-[235px] left-[222px] w-6 h-6 overflow-hidden"
-              alt="level"
-              src="/level.png"
-            />
-          </div>
 
-          <div className="absolute top-[120px] left-[32px] relative rounded-xl bg-white w-[336px] h-[172px]">
-            <div className="absolute top-[15px] left-[10px] leading-[25px] font-extrabold inline-block w-[323px] h-[51px]">
-              <p className="[margin-block-start:0] [margin-block-end:1px]">
-                タップしてからおさんぽスタート
-              </p>
-              <p className="m-0">PAWPO’Sとすれ違ってポイントゲット！</p>
+            <div className="relative top-[70px] rounded-xl bg-white w-[350px] h-[190px] mx-auto">
+              <div className="absolute top-[15px] left-[10px] leading-[25px] font-extrabold inline-block w-[323px] h-[51px]">
+                <p className="[margin-block-start:0] [margin-block-end:1px]">
+                  タップしてからおさんぽスタート
+                </p>
+                <p className="m-0">PAWPO’Sとすれ違ってポイントゲット！</p>
+              </div>
+              <img
+                className="absolute top-[72px] left-[10px] w-[330px] cursor-pointer"
+                alt="sanpostart"
+                src="/sanpostart.png"
+                onClick={onRectangleClick}
+              />
             </div>
-            <img
-              className="absolute top-[66px] left-[19px] rounded-31xl bg-paleturquoise w-[294px] h-[90px] cursor-pointer"
-              alt="sanpostart"
-              src="/sanpostart.png"
-              onClick={onRectangleClick}
-            />
           </div>
-  return (
-    <div>
-      <Menu />
-    </div>
-  );
+          <div>
+            <Menu />
+          </div>
         </div>
       </div>
     </>

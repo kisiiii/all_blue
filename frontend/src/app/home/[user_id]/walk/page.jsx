@@ -180,41 +180,48 @@ const WalkPage = ({ params }) => {
         <meta name="viewport" content="width=device-width, initial-scale=1.0" />
         <title>散歩中</title>
       </Head>
-      <div className="container flex flex-col items-center justify-center min-h-screen w-full p-10 md:p-0">
+      <div className="container flex flex-col items-center justify-between min-h-screen w-full p-10 md:p-0">
         <div className="relative w-full max-w-md bg-tan h-[844px] overflow-hidden text-center text-base text-black font-montserrat">
-          <div className="absolute top-[32px] left-[32px] text-xl font-extrabold">
-            ちかくにいるPAWPO'S
+          <div className="mt-10 mb-5">
+            <div className="relative rounded-31xl bg-azure w-[350px] h-[43px] mx-auto">
+              <div className="absolute top-[6px] left-[30px] leading-[28px] font-extrabold inline-block w-[254px] h-7">
+                ちかくにいるPAWPO'S
+              </div>
+            </div>
           </div>
-          <div className="absolute top-[72px] left-[32px] w-full px-4">
-            {nearbyDogs.length === 0 ? (
-              <p className="text-lg">近くに犬はいません。</p>
-            ) : (
-              <ul className="space-y-4">
-                {nearbyDogs.map((dog, index) => (
-                  <li key={index} className="flex items-center space-x-4">
+          <div className="relative rounded-xl bg-white w-[350px] h-[500px] mx-auto">
+            <div className="absolute top-[80px] font-bold w-full">
+              {nearbyDogs.length === 0 ? (
+                <p className="text-lg">・・・だれもいないようです・・・</p>
+              ) : (
+                <ul className="space-y-4">
+                  {nearbyDogs.map((dog, index) => (
+                    <li key={index} className="flex items-center space-x-4">
                     <img
                       src={dog.dog_photo}
                       alt={dog.dog_name}
-                      className="rounded-full w-12 h-12 object-cover"
+                      className="rounded-full w-14 h-14 object-cover"
                     />
                     <div className="text-left">
                       <p className="font-bold text-black">{dog.dog_name}</p>
-                      <p className="text-gray-600">
+                      <p className="text-tan">
                         {dog.distance.toFixed(1)}m
                       </p>
                     </div>
-                  </li>
-                ))}
-              </ul>
-            )}
+                    </li>
+                  ))}
+                </ul>
+              )}
+            </div>
           </div>
-
-          <button
-            className="absolute bottom-[80px] left-[32px] w-[336px] py-4 bg-gray-300 text-black font-extrabold rounded-lg"
-            onClick={handleEndWalk}
-          >
-            さんぽ終了
-          </button>
+          <div className="absolute top-[40px] relative rounded-xl bg-white w-[350px] h-[150px] mx-auto">
+            <img
+              className="absolute top-[30px] left-[5px] relative w-[300px] cursor-pointer"
+              alt="sanpostop"
+              src="/sanpo_stop.png"
+              onClick={handleEndWalk}
+            />
+          </div>
         </div>
       </div>
     </>
