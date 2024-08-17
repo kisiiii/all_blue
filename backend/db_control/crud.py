@@ -12,7 +12,7 @@ from datetime import datetime, timedelta, timezone
 from math import radians, cos, sin, sqrt, atan2
 
 from db_control.connect import engine
-from db_control.mymodels import Users, Dogs, DogBooks, Locations, Encounts, EarnPoints, UsePoints
+from db_control.mymodels import Users, Dogs, DogBooks, Locations, Encounts, EarnPoints, UsePoints, RTLocations
 
 # 日本時間のタイムゾーン
 JST = timezone(timedelta(hours=9))
@@ -388,3 +388,64 @@ def get_total_points(user_id):
     finally:
         session.close()
 
+
+
+# 現在地から近い犬情報取得と表示
+def get_nearby_dogs(user_id, latitude, longitude):
+    Session = sessionmaker(bind=engine)
+    session = Session()
+
+    try:
+        # ユーザー以外の位置情報を取得
+        other_users_locations = session.query(RTLocations, Dogs).join(
+            Dogs, RTLocations.user_id == Dogs.user_id
+        ).filter(
+            RTLocations.user_id != user_id
+        ).all()
+
+        nearby_dogs = []
+        for loc, dog in other_users_locations:
+            distance = haversine(longitude, latitude, loc.longitude, loc.latitude)
+            if distance <= 500:
+                nearby_dogs.append({
+                    "dog_name": dog.dog_name,
+                    "dog_photo": dog.dog_photo,
+                    "distance": distance
+                })
+
+        # 距離でソートし、最大10匹まで表示
+        nearby_dogs = sorted(nearby_dogs, key=lambda x: x["distance"])[:10]
+
+        return nearby_dogs
+
+    except Exception as e:
+        session.rollback()
+        print(f"Error occurred: {str(e)}")
+        return []
+    finally:
+        session.close()
+
+
+
+# 地図表示用のGPS履歴の取得（フロント未実装）
+def get_locations_by_date(user_id, date):
+    Session = sessionmaker(bind=engine)
+    session = Session()
+    try:
+        # 指定された日付のGPSデータを取得
+        locations = session.query(Locations).filter(
+            Locations.user_id == user_id,
+            func.date(Locations.location_datetime) == date
+        ).all()
+        
+        result_list = []
+        for location in locations:
+            result_list.append({
+                'latitude': location.latitude,
+                'longitude': location.longitude,
+                'timestamp': location.location_datetime.isoformat()
+            })
+
+        return result_list
+    finally:
+        session.close()
