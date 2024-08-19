@@ -190,24 +190,22 @@ const WalkPage = ({ params }) => {
             </div>
           </div>
           <div className="relative rounded-xl bg-white w-[350px] h-[500px] mx-auto">
-            <div className="absolute top-[80px] font-bold w-full">
+            <div className="absolute top-[30px] font-bold w-full">
               {nearbyDogs.length === 0 ? (
                 <p className="text-lg">・・・だれもいないようです・・・</p>
               ) : (
-                <ul className="space-y-4">
+                <ul className="space-y-5">
                   {nearbyDogs.map((dog, index) => (
-                    <li key={index} className="flex items-center space-x-4">
-                    <img
-                      src={dog.dog_photo}
-                      alt={dog.dog_name}
-                      className="rounded-full w-14 h-14 object-cover"
-                    />
-                    <div className="text-left">
-                      <p className="font-bold text-black">{dog.dog_name}</p>
-                      <p className="text-tan">
-                        {dog.distance.toFixed(1)}m
-                      </p>
-                    </div>
+                    <li key={index} className="flex items-center space-x-8">
+                      <img
+                        src={dog.dog_photo}
+                        alt={dog.dog_name}
+                        className="rounded-full w-20 h-20 object-cover"
+                      />
+                      <div className="text-left">
+                        <p className="font-bold text-black">{dog.dog_name}</p>
+                        <p className="text-tan">{dog.distance.toFixed(1)}m</p>
+                      </div>
                     </li>
                   ))}
                 </ul>
