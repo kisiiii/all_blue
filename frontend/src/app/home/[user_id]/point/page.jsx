@@ -47,6 +47,11 @@ const DogsGrid = () => {
       <Head>
         <meta name="viewport" content="width=device-width, initial-scale=1.0" />
         <title>ポイント</title>
+        <style>{`
+          .title-container {
+          text-align: center;
+          }
+        `}</style>
       </Head>
       <div className="container flex flex-col items-center justify-between min-h-screen w-full p-10 md:p-0">
         <div className="relative w-full max-w-md bg-tan h-[844px] overflow-hidden text-center text-base text-black font-montserrat">
@@ -60,8 +65,8 @@ const DogsGrid = () => {
             </div>
             <div className="relative w-full h-auto mt-4 flex justify-center">
               <img
-                className="absolute top-[13px] w-5/6" // 幅を親の50%に設定
-                src="/zukantouka.png"
+                className="max-h-[650px] w-auto object-contain" // 画像の高さを制限し、中央揃え
+                src="/point_change.png"
                 alt="ポイント"
               />
             </div>
