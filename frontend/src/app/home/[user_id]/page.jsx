@@ -58,8 +58,21 @@ const Component = () => {
     router.push(`/home/${userId}/walk`); // home/[user_id]/walk に移動
   }, [router, userId]);
 
-  const dummyImageUrl =
-    "https://webdesign-trends.net/wp/wp-content/uploads/2021/08/dummy-images.jpg";
+  const onHomeClick = useCallback(() => {
+    router.push(`/home/${userId}`); // home/[user_id] に移動
+  }, [router, userId]);
+
+  const onSanpoClick = useCallback(() => {
+    router.push(`/home/${userId}/walk/result`); // home/[user_id]/zukan に移動
+  }, [router, userId]);
+
+  const onPointClick = useCallback(() => {
+    router.push(`/home/${userId}/point`); // home/[user_id]/point に移動
+  }, [router, userId]);
+
+  const onZukanClick = useCallback(() => {
+    router.push(`/home/${userId}/zukan`); // home/[user_id]/zukan に移動
+  }, [router, userId]);
 
   if (isLoading) {
     return <div>Loading...</div>; // ローディング中の表示
@@ -74,7 +87,6 @@ const Component = () => {
       <div className="container flex flex-col items-center justify-between min-h-screen w-full p-10 md:p-0">
         <div className="relative w-full max-w-md bg-tan h-[844px] overflow-hidden text-center text-base text-black font-montserrat">
           <div className="mt-10 mb-5">
-
             <div className="relative top-[30px] rounded-xl bg-white w-[350px] h-[170px] mx-auto">
               <div className="absolute top-[32px] left-[15px] rounded-31xl bg-azure w-[320px] h-[43px] cursor-pointer"></div>
               <div className="absolute top-[39px] left-[36px] leading-[28px] font-extrabold inline-block w-[254px] h-7">
@@ -88,7 +100,7 @@ const Component = () => {
             </div>
 
             <div className="relative top-[50px] rounded-xl bg-white w-[350px] h-[282px] mx-auto">
-            <div className="absolute top-[160px] left-[80px] rounded-31xl bg-paleturquoise w-[190px] h-[43px]"></div>
+              <div className="absolute top-[160px] left-[80px] rounded-31xl bg-paleturquoise w-[190px] h-[43px]"></div>
               <div className="absolute top-[170px] left-1/2 transform -translate-x-1/2 text-5xl leading-[28px] font-extrabold text-black">
                 {dogData.dog_name}
               </div>
@@ -138,6 +150,7 @@ const Component = () => {
               className="absolute h-[62.35%] w-[13.51%] top-[14.12%] right-[82.13%] bottom-[23.53%] left-[4.36%] max-w-full overflow-hidden max-h-full"
               alt="home"
               src="/home.png"
+              onClick={onHomeClick}
             />
 
             <div className="absolute h-[20.82%] w-[12.67%] top-[78.82%] left-[24.62%] leading-[16px] font-extrabold inline-block">
@@ -147,6 +160,7 @@ const Component = () => {
               className="absolute h-[55.29%] w-[12.82%] top-[15.29%] right-[62.82%] bottom-[29.41%] left-[24.36%] max-w-full overflow-hidden max-h-full object-cover"
               alt="sanpo"
               src="/sanpo.png"
+              onClick={onSanpoClick}
             />
 
             <div className="absolute h-[20.82%] w-[16.9%] top-[78.82%] left-[41.79%] leading-[16px] font-extrabold inline-block">
@@ -156,6 +170,7 @@ const Component = () => {
               className="absolute h-[56.47%] w-[12.31%] top-[20%] right-[43.59%] bottom-[23.53%] left-[44.1%] max-w-full overflow-hidden max-h-full"
               alt="point"
               src="/point.png"
+              onClick={onPointClick}
             />
 
             <div className="absolute h-[20.82%] w-[8.46%] top-[78.82%] left-[66.41%] leading-[16px] font-extrabold inline-block">
@@ -165,6 +180,7 @@ const Component = () => {
               className="absolute h-[52.94%] w-[11.54%] top-[20%] right-[23.85%] bottom-[27.06%] left-[64.62%] max-w-full overflow-hidden max-h-full"
               alt="zukan"
               src="/zukanicon.png"
+              onClick={onZukanClick}
             />
 
             <div className="absolute h-[20.82%] w-[8.46%] top-[78.82%] left-[84.87%] leading-[16px] font-extrabold inline-block">
