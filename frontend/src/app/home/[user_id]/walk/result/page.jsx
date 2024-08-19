@@ -83,9 +83,10 @@ const Component = () => {
       </Head>
       <div className="container flex flex-col items-center justify-between min-h-screen w-full p-10 md:p-0">
         <div className="relative w-full max-w-md bg-tan h-[844px] overflow-hidden text-center text-base text-black font-montserrat">
-          <div className="mt-10 mb-3">
+          <div className="mt-10 mb-5">
+            {/* 上下のマージンを半分に */}
             <div className="relative rounded-31xl bg-azure w-[350px] h-[43px] mx-auto">
-              <div className="absolute top-[6px] left-[35px] leading-[28px] font-extrabold inline-block w-[254px] h-7">
+              <div className="absolute top-[6px] left-1/2 transform -translate-x-1/2 leading-[28px] font-extrabold inline-block w-[254px] h-7 text-black">
                 最近のさんぽ記録
               </div>
             </div>
