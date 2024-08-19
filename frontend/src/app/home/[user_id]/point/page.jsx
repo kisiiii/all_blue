@@ -47,23 +47,17 @@ const DogsGrid = () => {
       <Head>
         <meta name="viewport" content="width=device-width, initial-scale=1.0" />
         <title>ポイント</title>
-        <style>{`
-          .title-container {
-          text-align: center;
-          }
-        `}</style>
       </Head>
       <div className="container flex flex-col items-center justify-between min-h-screen w-full p-10 md:p-0">
         <div className="relative w-full max-w-md bg-tan h-[844px] overflow-hidden text-center text-base text-black font-montserrat">
           <div className="mt-10 mb-5">
-            {" "}
             {/* 上下のマージンを半分に */}
             <div className="relative rounded-31xl bg-azure w-[350px] h-[43px] mx-auto">
-              <div className="absolute top-[6px] left-[30px] leading-[28px] font-extrabold inline-block w-[254px] h-7">
+              <div className="absolute top-[6px] left-1/2 transform -translate-x-1/2 leading-[28px] font-extrabold inline-block w-[254px] h-7 text-black">
                 ポイント
               </div>
             </div>
-            <div className="relative w-full h-auto mt-4 flex justify-center">
+            <div className="relative w-full h-auto mt-4 flex justify-center items-center">
               <img
                 className="max-h-[650px] w-auto object-contain" // 画像の高さを制限し、中央揃え
                 src="/point_change.png"
